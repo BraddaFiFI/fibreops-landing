@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FibreOps — Sign in</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f8f9fa; color: #1a1a1a; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .box { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .logo-mark { width: 36px; height: 36px; background: #f97316; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #000; }
+    .logo-text { font-size: 20px; font-weight: 700; color: #0a0a0a; }
+    .tagline { font-size: 12px; color: #888; margin-bottom: 32px; }
+    .title { font-size: 18px; font-weight: 700; color: #0a0a0a; margin-bottom: 6px; }
+    .sub { font-size: 13px; color: #888; margin-bottom: 28px; }
+    label { display: block; font-size: 12px; color: #555; margin-bottom: 6px; }
+    input { width: 100%; padding: 12px 14px; background: #f8f9fa; border: 1px solid #e5e7eb; border-radius: 8px; color: #1a1a1a; font-size: 14px; margin-bottom: 16px; outline: none; }
+    input:focus { border-color: #f97316; background: #fff; }
+    .btn { width: 100%; padding: 13px; background: #f97316; color: #000; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 14px; }
+    .btn:hover { background: #ea6c0a; }
+    .btn:disabled { background: #fed7aa; cursor: not-allowed; }
+    .error { color: #ef4444; font-size: 12px; margin-bottom: 14px; padding: 10px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; display: none; }
+    .forgot { display: block; text-align: center; font-size: 12px; color: #f97316; cursor: pointer; text-decoration: none; margin-top: 4px; }
+    .forgot:hover { color: #ea6c0a; }
+    .success { color: #22c55e; font-size: 12px; margin-top: 12px; padding: 10px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; display: none; }
+    .loading { text-align: center; color: #888; font-size: 13px; padding: 20px 0; display: none; }
+    .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #e5e7eb; border-top-color: #f97316; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .footer { text-align: center; font-size: 11px; color: #aaa; margin-top: 24px; }
+    .footer a { color: #f97316; text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="box">
+  <div class="logo">
+    <div class="logo-mark">F</div>
+    <div class="logo-text">FibreOps</div>
+  </div>
+  <div class="tagline">Fibre Network Operations Platform</div>
+  <div class="title">Sign in to your account</div>
+  <div class="sub">Enter your credentials to continue</div>
+  <div class="error" id="errorMsg"></div>
+  <label>Email address</label>
+  <input type="email" id="emailInput" placeholder="you@yourcompany.co.za" autocomplete="email">
+  <label>Password</label>
+  <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()">
+  <button class="btn" id="signInBtn" onclick="signIn()">Sign in</button>
+  <a class="forgot" onclick="forgotPassword()">Forgot your password?</a>
+  <div class="success" id="successMsg">Password reset email sent — check your inbox.</div>
+  <div class="loading" id="loadingMsg">
+    <span class="loading-spinner"></span>
+    Signing you in...
+  </div>
+  <div class="footer">
+    Need help? <a href="mailto:hello@fibreops.co.za">hello@fibreops.co.za</a>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://toqdfdspthaodnealufq.supabase.co'
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRvcWRmZHNwdGhhb2RuZWFsdWZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTc0OTgsImV4cCI6MjA5MDE3MzQ5OH0.eJIQ8ABv9nf1DTNUOjsT_EA2HUIyza3MXWVbN9OzB0I'
+  const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      storage: { getItem: () => null, setItem: () => {}, removeItem: () => {} }
+    }
+  })
+
+  async function signIn() {
+    const email = document.getElementById('emailInput').value.trim()
+    const password = document.getElementById('passwordInput').value
+    const errorEl = document.getElementById('errorMsg')
+    const btn = document.getElementById('signInBtn')
+    const loadingEl = document.getElementById('loadingMsg')
+
+    errorEl.style.display = 'none'
+
+    if (!email || !password) {
+      errorEl.textContent = 'Please enter your email and password.'
+      errorEl.style.display = 'block'
+      return
+    }
+
+    btn.style.display = 'none'
+    loadingEl.style.display = 'block'
+
+    const { data, error } = await client.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      btn.style.display = 'block'
+      loadingEl.style.display = 'none'
+      errorEl.textContent = 'Incorrect email or password. Please try again.'
+      errorEl.style.display = 'block'
+      return
+    }
+
+    const { data: profile } = await client.from('profiles').select('role').eq('id', data.user.id).maybeSingle()
+
+    if (!profile) {
+      btn.style.display = 'block'
+      loadingEl.style.display = 'none'
+      errorEl.textContent = 'Account not found. Please contact your administrator.'
+      errorEl.style.display = 'block'
+      await client.auth.signOut()
+      return
+    }
+
+    const role = profile.role
+
+    if (role === 'technician') {
+      window.location.href = 'https://fibreops-dashboard.vercel.app/technician.html'
+    } else if (role === 'manager' || role === 'super_manager') {
+      window.location.href = 'https://fibreops-dashboard.vercel.app/index.html'
+    } else {
+      btn.style.display = 'block'
+      loadingEl.style.display = 'none'
+      errorEl.textContent = 'Access denied. Please contact your administrator.'
+      errorEl.style.display = 'block'
+      await client.auth.signOut()
+    }
+  }
+
+  async function forgotPassword() {
+    const email = document.getElementById('emailInput').value.trim()
+    const errorEl = document.getElementById('errorMsg')
+    if (!email) {
+      errorEl.textContent = 'Please enter your email address above first.'
+      errorEl.style.display = 'block'
+      return
+    }
+    await client.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://fibreops-dashboard.vercel.app/reset-password.html'
+    })
+    document.getElementById('successMsg').style.display = 'block'
+  }
+</script>
+</body>
+</html>
