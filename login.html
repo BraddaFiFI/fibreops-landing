@@ -75,15 +75,15 @@
   })
 
   async function signIn() {
-    const email = document.getElementById('emailInput').value.trim()
-    const password = document.getElementById('passwordInput').value
+    const emailVal = document.getElementById('emailInput').value.trim()
+    const passwordVal = document.getElementById('passwordInput').value
     const errorEl = document.getElementById('errorMsg')
     const btn = document.getElementById('signInBtn')
     const loadingEl = document.getElementById('loadingMsg')
 
     errorEl.style.display = 'none'
 
-    if (!email || !password) {
+    if (!emailVal || !passwordVal) {
       errorEl.textContent = 'Please enter your email and password.'
       errorEl.style.display = 'block'
       return
@@ -92,7 +92,7 @@
     btn.style.display = 'none'
     loadingEl.style.display = 'block'
 
-    const { data, error } = await client.auth.signInWithPassword({ email, password })
+    const { data, error } = await client.auth.signInWithPassword({ email: emailVal, password: passwordVal })
 
     if (error) {
       btn.style.display = 'block'
@@ -115,13 +115,10 @@
 
     const role = profile.role
 
-    const email = document.getElementById('emailInput').value.trim()
-    const password = document.getElementById('passwordInput').value
     if (role === 'technician') {
       window.location.href = 'https://fibreops-dashboard.vercel.app/technician.html'
     } else if (role === 'manager' || role === 'super_manager') {
       window.location.href = 'https://fibreops-dashboard.vercel.app/index.html'
-    }
     } else {
       btn.style.display = 'block'
       loadingEl.style.display = 'none'
@@ -132,14 +129,14 @@
   }
 
   async function forgotPassword() {
-    const email = document.getElementById('emailInput').value.trim()
+    const emailVal = document.getElementById('emailInput').value.trim()
     const errorEl = document.getElementById('errorMsg')
-    if (!email) {
+    if (!emailVal) {
       errorEl.textContent = 'Please enter your email address above first.'
       errorEl.style.display = 'block'
       return
     }
-    await client.auth.resetPasswordForEmail(email, {
+    await client.auth.resetPasswordForEmail(emailVal, {
       redirectTo: 'https://fibreops-dashboard.vercel.app/reset-password.html'
     })
     document.getElementById('successMsg').style.display = 'block'
