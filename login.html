@@ -118,9 +118,10 @@
     const email = document.getElementById('emailInput').value.trim()
     const password = document.getElementById('passwordInput').value
     if (role === 'technician') {
-      window.location.href = `https://fibreops-dashboard.vercel.app/technician.html?e=${encodeURIComponent(email)}&p=${encodeURIComponent(password)}`
+      window.location.href = 'https://fibreops-dashboard.vercel.app/technician.html'
     } else if (role === 'manager' || role === 'super_manager') {
-      window.location.href = `https://fibreops-dashboard.vercel.app/index.html?e=${encodeURIComponent(email)}&p=${encodeURIComponent(password)}`
+      window.location.href = 'https://fibreops-dashboard.vercel.app/index.html'
+    }
     } else {
       btn.style.display = 'block'
       loadingEl.style.display = 'none'
