@@ -115,10 +115,12 @@
 
     const role = profile.role
 
+    const token = data.session?.access_token
+    const refresh = data.session?.refresh_token
     if (role === 'technician') {
-      window.location.href = 'https://fibreops-dashboard.vercel.app/technician.html'
+      window.location.href = `https://fibreops-dashboard.vercel.app/technician.html#access_token=${token}&refresh_token=${refresh}&type=bearer`
     } else if (role === 'manager' || role === 'super_manager') {
-      window.location.href = 'https://fibreops-dashboard.vercel.app/index.html'
+      window.location.href = `https://fibreops-dashboard.vercel.app/index.html#access_token=${token}&refresh_token=${refresh}&type=bearer`
     } else {
       btn.style.display = 'block'
       loadingEl.style.display = 'none'
