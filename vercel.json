@@ -1,12 +1,6 @@
 {
   "rewrites": [
     { "source": "/login", "destination": "/login.html" },
-    { "source": "/login/", "destination": "/login.html" }
-  ]
-}
-{
-  "rewrites": [
-    { "source": "/login", "destination": "/login.html" },
     { "source": "/login/", "destination": "/login.html" },
     { "source": "/privacy", "destination": "/privacy.html" }
   ]
